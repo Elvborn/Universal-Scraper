@@ -1,0 +1,308 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Universal_Scraper.MainPage"
+             xmlns:ViewModel="clr-namespace:Universal_Scraper.ViewModels"
+             xmlns:Model="clr-namespace:Universal_Scraper.Models"
+             x:DataType="ViewModel:MainViewModel">
+
+    <Grid RowDefinitions="75, *" ColumnDefinitions="300,*">
+
+        <!-- Side Panel -->
+        <StackLayout Grid.RowSpan="2"
+                     BackgroundColor="{StaticResource Background}"
+                     HorizontalOptions="Fill"
+                     Padding="10">
+            <Label Text="Target"/>
+            <Picker Title="Select Target Type"
+                    x:Name="TargetTypePicker"
+                    ItemsSource="{Binding TargetTypePicker}"
+                    ItemDisplayBinding="{Binding DisplayName}"
+                    SelectedItem="{Binding SelectedTargetTypePicker}">
+                <Picker.Behaviors>
+                    <toolkit:EventToCommandBehavior 
+                        EventName="SelectedIndexChanged"
+                        Command="{Binding PickerHandlerCommand}"
+                        CommandParameter="{Binding SelectedTargetTypePicker}"/>
+                </Picker.Behaviors>
+            </Picker>
+            <Entry Placeholder="Target Path"
+                   Text="{Binding TargetPage}"
+                   ReturnCommand="{Binding SubmitTargetCommand}"/>
+            <Grid RowDefinitions="Auto"
+                  ColumnDefinitions="*,*">
+                <Entry Placeholder="Iteration Start"
+                       IsVisible="{Binding IsUsingMultiPage}"/>
+                <Entry Placeholder="Iteration End"
+                       Grid.Column="1"
+                       IsVisible="{Binding IsUsingMultiPage}"/>
+            </Grid>
+
+            <Label Text="Create Selector"/>
+            <Entry Placeholder="Name"
+                   Text="{Binding SelectorName}"/>
+            <Entry Placeholder="X-Path"
+                   Text="{Binding SelectedXPath}"/>
+            <Grid RowDefinitions="Auto"
+                  ColumnDefinitions="*,*">
+                <Picker Title="Selection Type"
+                        x:Name="SelectionTypePicker"
+                        ItemsSource="{Binding SelectionTypePicker}"
+                        ItemDisplayBinding="{Binding DisplayName}"
+                        SelectedItem="{Binding SelectedSelectionTypePicker}">
+                    <Picker.Behaviors>
+                        <toolkit:EventToCommandBehavior 
+                        EventName="SelectedIndexChanged"
+                        Command="{Binding PickerHandlerCommand}"
+                        CommandParameter="{Binding SelectedSelectionTypePicker}"/>
+                    </Picker.Behaviors>
+                </Picker>
+                <Picker Title="Element Type"
+                        x:Name="ElementTypePicker"
+                        Grid.Column="1"
+                        ItemsSource="{Binding ElementTypePicker}"
+                        ItemDisplayBinding="{Binding DisplayName}"
+                        SelectedItem="{Binding SelectedElementTypePicker}">
+                    <Picker.Behaviors>
+                        <toolkit:EventToCommandBehavior 
+                        EventName="SelectedIndexChanged"
+                        Command="{Binding PickerHandlerCommand}"
+                        CommandParameter="{Binding SelectedElementTypePicker}"/>
+                    </Picker.Behaviors>
+                </Picker>
+            </Grid>
+            <Grid ColumnDefinitions="*,10,*">
+                <Button Text="Highlight"
+                        IsEnabled="False"/>
+                <Button Text="Save Selection"
+                        Grid.Column="2"
+                        Command="{Binding SaveSelectorCommand}"/>
+            </Grid>
+
+            <StackLayout IsVisible="{Binding CanAddToObject}">
+                <Label Text="Add to Excisting Object"/>
+                <Picker Title="Object"
+                        ItemsSource="{Binding ObjectPicker}"
+                        ItemDisplayBinding="{Binding DisplayName}"
+                        SelectedItem="{Binding SelectedObjectPicker}">
+                    <Picker.Behaviors>
+                        <toolkit:EventToCommandBehavior 
+                            EventName="SelectedIndexChanged"
+                            Command="{Binding PickerHandlerCommand}"
+                            CommandParameter="{Binding SelectedObjectPicker}"/>
+                    </Picker.Behaviors>
+                </Picker>
+                <Button Text="Add"
+                        Command="{Binding AddToObjectCommand}"
+                        CommandParameter="{Binding SelectedObjectPicker}"/>
+            </StackLayout>
+
+            <StackLayout VerticalOptions="End">
+                <Label Text="Project"/>
+                <Entry Placeholder="Project Name"
+                       Text="{Binding ProjectName}"/>
+                <Grid ColumnDefinitions="*,10,*">
+                    <Button Text="Load"/>
+                    <Button Text="Save"
+            Grid.Column="2"/>
+                </Grid>
+            </StackLayout>
+
+
+        </StackLayout>
+
+        <!-- Header -->
+        <HorizontalStackLayout 
+            Grid.Column="1"
+            BackgroundColor="{StaticResource Background}"
+            HorizontalOptions="Fill">
+
+            <Border Style="{StaticResource PageButtonBorder}">
+                <Button Text="Web View"
+                        Style="{StaticResource PageButton}"
+                        Command="{Binding ChangeDisplayedContentCommand}"
+                        CommandParameter="web"/>
+            </Border>
+
+            <Border Style="{StaticResource PageButtonBorder}">
+                <Button Text="Selectors"
+                        Style="{StaticResource PageButton}"
+                        Command="{Binding ChangeDisplayedContentCommand}"
+                        CommandParameter="selector"/>
+            </Border>
+
+            <Border Style="{StaticResource PageButtonBorder}">
+                <Button Text="Collected Data"
+                        Style="{StaticResource PageButton}"
+                        Command="{Binding ChangeDisplayedContentCommand}"
+                        CommandParameter="data"/>
+            </Border>
+
+            <Button Text="Run"
+                    HorizontalOptions="End"
+                    VerticalOptions="Center"
+                    Command="{Binding ScrapeCommand}"/>
+        </HorizontalStackLayout>
+
+        <!-- Content -->
+        <!-- Web Content-->
+        <Grid Grid.Column="1"
+            Grid.Row="1"
+            RowDefinitions="*,40"
+            ColumnDefinitions="*"
+            IsVisible="{Binding ShowWebContent}">
+            <WebView Source="{Binding ActivePage}"
+                    x:Name="WebContent">
+                <WebView.Behaviors>
+                    <toolkit:EventToCommandBehavior
+                        EventName="Navigating"
+                        Command="{Binding WebNavigatingCommand}"
+                        x:TypeArguments="WebNavigatingEventArgs"/>
+                    <toolkit:EventToCommandBehavior
+                        EventName="Navigated"
+                        Command="{Binding WebNavigatedCommand}"
+                        x:TypeArguments="WebNavigatedEventArgs"/>
+                </WebView.Behaviors>
+            </WebView>
+            <Label Grid.Row="1"
+                    Text="{Binding HighlightedElement}"
+                    VerticalOptions="Center"/>
+        </Grid>
+
+        <!-- Selector Content-->
+        <CollectionView Grid.Column="1"
+                        Grid.Row="1"
+                        Margin="10"
+                        IsVisible="{Binding ShowSelectorContent}"
+                        ItemsSource="{Binding SelectorData}"
+                        EmptyView="No selectors available">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"
+                                   ItemSpacing="2"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type Model:Selector}">
+                    <Frame Padding="0">
+                        <Grid ColumnDefinitions="150,auto,auto,*,auto,auto,auto"
+                              Padding="0"
+                              Margin="0">
+                            <VerticalStackLayout Grid.Column="0"
+                                                 Padding="10">
+                                <Label Text="Name"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding Name}"
+                                       VerticalTextAlignment="Center"
+                                       LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1"
+                                                 Padding="10">
+                                <Label Text="Selection Type"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding SelectionType}"
+                                       VerticalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="2"
+                                                Padding="10">
+                                <Label Text="Element Type"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding ElementType}"
+                                       VerticalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="3"
+                                                 Padding="10">
+                                <Label Text="XPath"
+                                        VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding XPath}"
+                                       VerticalTextAlignment="Center"
+                                       LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="4"
+                                                 Padding="10"
+                                                 IsVisible="{Binding IsObject}">
+                                <Label Text="Selectors"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding Selectors.Count}"
+                                       VerticalTextAlignment="Center"
+                                       LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+
+                            <Button Text="Edit"
+                                    Grid.Column="5"
+                                    BackgroundColor="Green"
+                                    Margin="5"
+                                    IsVisible="{Binding IsObject}"/>
+                            <Button Text="Delete"
+                                    Grid.Column="6"
+                                    BackgroundColor="Red"
+                                    Margin="5"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ViewModel:MainViewModel}}, Path=DeleteSelectorCommand}"
+                                    CommandParameter="{Binding .}"/>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Data Content-->
+        <CollectionView Grid.Column="1"
+                        Grid.Row="1"
+                        Margin="10"
+                        IsVisible="{Binding ShowDataContent}"
+                        ItemsSource="{Binding CollectedData}"
+                        EmptyView="No data available">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"
+                           ItemSpacing="2"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type Model:Selector}">
+                    <Frame Padding="0">
+                        <Grid ColumnDefinitions="150,auto,auto,*"
+                              Padding="0"
+                              Margin="0">
+                            <VerticalStackLayout Grid.Column="0"
+                                                 Padding="10">
+                                <Label Text="Name"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding Name}"
+                                       VerticalTextAlignment="Center"
+                                       LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1"
+                                                 Padding="10">
+                                <Label Text="Selection Type"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding SelectionType}"
+                                       VerticalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="2"
+                                        Padding="10">
+                                <Label Text="Element Type"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding ElementType}"
+                                       VerticalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="3"
+                                                 Padding="10">
+                                <Label Text="Result"
+                                       VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding Result}"
+                                       VerticalTextAlignment="Center"
+                                       LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>
